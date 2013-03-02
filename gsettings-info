@@ -1,0 +1,339 @@
+#!/bin/sh
+
+usage() {
+  SELF=`basename $0`
+  cat <<EOF
+Usage:
+  ${SELF} COMMAND [ARGS...]
+
+Commands:
+  help    Show this information
+  summary Get the summary of keys
+  desc    Get the description of keys
+  default Get the default value of keys
+  show    Show the information of keys
+
+Use '${SELF} help COMMAND' to get detailed help
+EOF
+}
+
+usage_help() {
+  SELF=`basename $0`
+  cat <<EOF
+Usage:
+  ${SELF} help [COMMAND]
+
+Print help
+
+Arguments:
+  COMMAND   The (optional) command to explain
+EOF
+}
+
+
+usage_summary() {
+  SELF=`basename $0`
+  cat <<EOF
+Usage:
+  ${SELF} summary SCHEMA [KEY]
+
+Get the summary of KEY
+If no KEY is given, show the summary of all the keys within the schema
+
+Arguments:
+  SCHEMA    The name of the schema
+  KEY       The key within the schema
+EOF
+}
+
+usage_desc() {
+  SELF=`basename $0`
+  cat <<EOF
+Usage:
+  ${SELF} desc SCHEMA [KEY]
+
+Get the description of KEY
+If no KEY is given, show the description of all the keys within the schema
+
+Arguments:
+  SCHEMA    The name of the schema
+  KEY       The key within the schema
+EOF
+}
+
+usage_default() {
+  SELF=`basename $0`
+  cat <<EOF
+Usage:
+  ${SELF} default SCHEMA [KEY]
+
+Get the default value of KEY
+If no KEY is given, show the default value of all the keys within the schema
+
+Arguments:
+  SCHEMA    The name of the schema
+  KEY       The key within the schema
+EOF
+}
+
+usage_show() {
+  SELF=`basename $0`
+  cat <<EOF
+Usage:
+  ${SELF} show SCHEMA [KEY]
+
+Show the information of KEY
+If no KEY is given, show the information of all the keys within the schema
+
+Arguments:
+  SCHEMA    The name of the schema
+  KEY       The key within the schema
+EOF
+}
+
+usage_unknown() {
+  CMD=$1
+  cat <<EOF
+Unknown command ${CMD}
+
+EOF
+  usage
+}
+
+help() {
+  HELP_CMD=$1
+  case _"$HELP_CMD" in
+    _)
+      usage
+      ;;
+    _help)
+      usage_help
+      ;;
+    _summary)
+      usage_summary
+      ;;
+    _desc)
+      usage_desc
+      ;;
+    _default)
+      usage_default
+      ;;
+    _show)
+      usage_show
+      ;;
+    _*)
+      usage_unknown "$HELP_CMD"
+      return 1
+      ;;
+  esac
+  return 0
+}
+
+
+schema_path() {
+  schema=$1
+  DATA_DIRS="${XDG_DATA_DIRS:-/usr/share/}"
+  IFS_ORG=$IFS
+  IFS=:
+  for d in $DATA_DIRS; do
+    schemadir="${d}/glib-2.0/schemas"
+
+    wk_schema_name=$schema
+    wk_schema_file="${schemadir}/${wk_schema_name}.gschema.xml"
+    while test ! -f "$wk_schema_file"; do
+      wk_schema_name=`echo "$wk_schema_name" | sed 's/\.[^.]*$//'`
+      echo "$wk_schema_name" | grep -q '^[^.]*$' && continue 2
+      wk_schema_file="${schemadir}/${wk_schema_name}.gschema.xml"
+    done
+    exist=`echo \
+'<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+  <xsl:output method="text"/>
+  <xsl:strip-space elements="*"/>
+
+  <xsl:template match="/schemalist/schema[@id='"'$schema'"']">
+    <xsl:value-of select="@id"/>
+  </xsl:template>
+  <xsl:template match="text()"/>
+</xsl:stylesheet>' |
+    xsltproc - "$wk_schema_file"`
+    test _"$exist" = _ && continue
+
+    IFS="$IFS_ORG"
+    echo "$wk_schema_file"
+    return 0
+  done
+  IFS="$IFS_ORG"
+  return 1
+}
+
+key_exist() {
+  schema=$1
+  key=$2
+  schema_xml=$3
+  exist=`echo '
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+  <xsl:output method="text"/>
+  <xsl:strip-space elements="*"/>
+
+  <xsl:template match="/schemalist/schema[@id='"'$schema'"']/key[@name='"'$key'"']">
+    <xsl:value-of select="@name"/>
+  </xsl:template>
+  <xsl:template match="text()"/>
+</xsl:stylesheet>' |
+  xsltproc - "$schema_xml"`
+  test _"$exist" = _ && return 1
+  return 0
+}
+
+get_info() {
+  schema=$1
+  schema_xml=$2
+
+  xsltproc - "$schema_xml" <<XSLT
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+  <xsl:output method="text"/>
+  <xsl:strip-space elements="*"/>
+
+  <xsl:template match="/schemalist/schema[@id='$schema']">
+    <xsl:for-each select="key">
+      <xsl:text>KEY: </xsl:text>
+      <xsl:value-of select="@name"/>
+      <xsl:text>&#x0A;</xsl:text>
+      <xsl:text>TYPE: </xsl:text>
+      <xsl:value-of select="@type"/>
+      <xsl:text>&#x0A;</xsl:text>
+      <xsl:text>SUMMARY: </xsl:text>
+      <xsl:value-of select="normalize-space(summary)"/>
+      <xsl:text>&#x0A;</xsl:text>
+      <xsl:text>DESCRIPTION: </xsl:text>
+      <xsl:value-of select="normalize-space(description)"/>
+      <xsl:text>&#x0A;</xsl:text>
+      <xsl:text>DEFAULT: </xsl:text>
+      <xsl:value-of select="normalize-space(default)"/>
+      <xsl:text>&#x0A;</xsl:text>
+      <xsl:text>&#x0A;</xsl:text>
+    </xsl:for-each>
+  </xsl:template>
+  <xsl:template match="text()"/>
+</xsl:stylesheet>
+XSLT
+}
+
+get_field() {
+  FIELD=$1
+  SCHEMA=$2
+  KEY=$3
+  SCHEMA_XML=`schema_path "$SCHEMA"`
+  if test _"$SCHEMA_XML" = _; then
+    echo "No such schema '${SCHEMA}'" >&2
+    exit 1
+  fi
+  if test _"$KEY" = _; then
+    get_info "$SCHEMA" "$SCHEMA_XML" | sed -n "
+      /^KEY: /,/^$/{
+        /^KEY: /{
+          s/^KEY: //;h
+        }
+        /^${FIELD}: /{
+          s/^${FIELD}: //;H
+          g
+          s/\n/: /p
+        }
+      }"
+    return 0
+  fi
+  if ! key_exist $SCHEMA $KEY $SCHEMA_XML; then
+    echo "No such key '${KEY}'" >&2
+    exit 1
+  fi
+  get_info "$SCHEMA" "$SCHEMA_XML" | sed -n "/^KEY: ${KEY}$/,/^$/{s/^${FIELD}: //p}"
+}
+
+get_summary() {
+  if test "$#" -eq 0; then
+    usage_summary >&2
+    exit 1
+  fi
+  SCHEMA=$1
+  KEY=$2
+  get_field SUMMARY "$SCHEMA" "$KEY"
+}
+
+get_desc() {
+  if test "$#" -eq 0; then
+    usage_desc >&2
+    exit 1
+  fi
+  SCHEMA=$1
+  KEY=$2
+  get_field DESCRIPTION "$SCHEMA" "$KEY"
+}
+
+get_default() {
+  if test "$#" -eq 0; then
+    usage_default >&2
+    exit 1
+  fi
+  SCHEMA=$1
+  KEY=$2
+  get_field DEFAULT "$SCHEMA" "$KEY"
+}
+
+show_info() {
+  if test "$#" -eq 0; then
+    usage_show >&2
+    exit 1
+  fi
+  SCHEMA=$1
+  KEY=$2
+  SCHEMA_XML=`schema_path "$SCHEMA"`
+  if test _"$SCHEMA_XML" = _; then
+    echo "No such schema '${SCHEMA}'" >&2
+    exit 1
+  fi
+  if test _"$KEY" = _; then
+    get_info "$SCHEMA" "$SCHEMA_XML" | sed '$d'
+    return 0
+  fi
+  if ! key_exist $SCHEMA $KEY $SCHEMA_XML; then
+    echo "No such key '${KEY}'" >&2
+    exit 1
+  fi
+  get_info "$SCHEMA" "$SCHEMA_XML" | sed -n "/^KEY: ${KEY}$/,/^$/{/^$/d;p}"
+}
+
+
+
+if test "$#" -eq 0; then
+  usage >&2
+  exit 1
+fi
+
+CMD=$1
+shift 1
+case _"$CMD" in
+  _)
+    usage >&2
+    exit 1
+    ;;
+  _help)
+    help "$@"
+    exit $?
+    ;;
+  _summary)
+    get_summary "$@"
+    ;;
+  _desc)
+    get_desc "$@"
+    ;;
+  _default)
+    get_default "$@"
+    ;;
+  _show)
+    show_info "$@"
+    ;;
+  *)
+    usage_unknown "$CMD" >&2
+    exit 1
+    ;;
+esac

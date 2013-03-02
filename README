@@ -1,0 +1,106 @@
+gsettings-info
+==============
+
+Description
+-----------
+
+Gsettings-info is a command line tool. It allows you to get gschema information which the gsettings command does not give. You can get summary, description, default value, and|or type of keys.
+
+
+Usage
+-----
+
+::
+
+  $ gsettings-info help
+  Usage:
+    gsettings-info COMMAND [ARGS...]
+  
+  Commands:
+    help    Show this information
+    summary Get the summary of keys
+    desc    Get the description of keys
+    default Get the default value of keys
+    show    Show the information of keys
+  
+  Use 'gsettings-info help COMMAND' to get detailed help
+
+
+Example
+-------
+
+To get the descprition of the key 'dynamic-workspaces' in the schema 'org.gnome.shell.overrides'
+
+::
+
+  $ gsettings-info desc org.gnome.shell.overrides dynamic-workspaces
+  This key overrides the key in org.gnome.mutter when running GNOME Shell.
+
+
+If no key is given, you get the description of all the keys in the schema.
+
+::
+
+  $ gsettings-info desc org.gnome.shell.overrides                   
+  attach-modal-dialogs: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  button-layout: This key overrides the key in org.gnome.desktop.wm.preferences when running GNOME Shell.
+  edge-tiling: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  dynamic-workspaces: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  workspaces-only-on-primary: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+
+
+You can get a summary or a default value as well as description like that. Gsettings-info shows all the information of keys as below.
+
+::
+
+  $ gsettings-info show org.gnome.shell.overrides dynamic-workspaces
+  KEY: dynamic-workspaces
+  TYPE: b
+  SUMMARY: Workspaces are managed dynamically
+  DESCRIPTION: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  DEFAULT: true
+
+
+  $ gsettings-info show org.gnome.shell.overrides
+  KEY: attach-modal-dialogs
+  TYPE: b
+  SUMMARY: Attach modal dialog to the parent window
+  DESCRIPTION: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  DEFAULT: true
+  
+  KEY: button-layout
+  TYPE: s
+  SUMMARY: Arrangement of buttons on the titlebar
+  DESCRIPTION: This key overrides the key in org.gnome.desktop.wm.preferences when running GNOME Shell.
+  DEFAULT: ":close"
+  
+  KEY: edge-tiling
+  TYPE: b
+  SUMMARY: Enable edge tiling when dropping windows on screen edges
+  DESCRIPTION: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  DEFAULT: true
+  
+  KEY: dynamic-workspaces
+  TYPE: b
+  SUMMARY: Workspaces are managed dynamically
+  DESCRIPTION: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  DEFAULT: true
+  
+  KEY: workspaces-only-on-primary
+  TYPE: b
+  SUMMARY: Workspaces only on primary monitor
+  DESCRIPTION: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  DEFAULT: true
+
+
+Authors
+-------
+
+Jiro Matsuzawa <jmatsuzawa@gnome.org>
+
+
+License
+-------
+
+This program is distributed under the terms of the GNU General Public
+License, version 3 or later. See the COPYING file for details.
