@@ -93,6 +93,21 @@ You can get a summary or a default value as well as description like that. Gsett
   DEFAULT: true
 
 
+COMMAND COMPLETION
+------------------
+
+The program supports bash completion. To take advantage of the completion
+feature, load completion/bash/gsettings-info in your ~/.bash_completion.
+You can load it using the source command or dot (.) command. For more
+details, see the bash manual ($ man bash).
+
+
+REQUIREMENT
+-----------
+
+- xsltproc (http://xmlsoft.org/xslt/)
+
+
 Authors
 -------
 
