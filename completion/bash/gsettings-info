@@ -1,0 +1,39 @@
+
+# Check for bash
+[ -z "$BASH_VERSION" ] && return
+
+__gsettings_info() {
+  local choices coffset schemadir
+  coffset=0
+  schemadir=
+
+  case "$((${COMP_CWORD}-${coffset}))" in
+    1)
+      choices=$'help \nsummary \ndesc \ndefault \nshow '
+      ;;
+
+    2)
+      case "${COMP_WORDS[$(($coffset+1))]}" in
+        help)
+          choices=$'help\nsummary\ndesc\ndefault\nshow'
+          ;;
+
+        summary|desc|default|show)
+          choices="$(gsettings $schemadir list-schemas | sed -e 's.$. .')"
+          ;;
+
+      esac
+      ;;
+    3)
+      case "${COMP_WORDS[$(($coffset+1))]}" in
+        summary|desc|default|show)
+          choices="$(gsettings $schemadir list-keys ${COMP_WORDS[$(($coffset+2))]} 2> /dev/null)"
+          ;;
+      esac
+      ;;
+  esac
+
+  local IFS=$'\n'
+  COMPREPLY=($(compgen -W "${choices}" -- "${COMP_WORDS[${COMP_CWORD}]}"))
+}
+complete -o nospace -F __gsettings_info gsettings-info
