@@ -130,36 +130,22 @@ help() {
 }
 
 
-schema_path() {
+schema_file() {
   schema=$1
   DATA_DIRS="${XDG_DATA_DIRS:-/usr/share/}"
   IFS_ORG=$IFS
   IFS=:
-  for d in $DATA_DIRS; do
-    schemadir="${d}/glib-2.0/schemas"
-
-    wk_schema_name=$schema
-    wk_schema_file="${schemadir}/${wk_schema_name}.gschema.xml"
-    while test ! -f "$wk_schema_file"; do
-      wk_schema_name=`echo "$wk_schema_name" | sed 's/\.[^.]*$//'`
-      echo "$wk_schema_name" | grep -q '^[^.]*$' && continue 2
-      wk_schema_file="${schemadir}/${wk_schema_name}.gschema.xml"
-    done
-    exist=`echo \
-'<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
-  <xsl:output method="text"/>
-  <xsl:strip-space elements="*"/>
-
-  <xsl:template match="/schemalist/schema[@id='"'$schema'"']">
-    <xsl:value-of select="@id"/>
-  </xsl:template>
-  <xsl:template match="text()"/>
-</xsl:stylesheet>' |
-    xsltproc - "$wk_schema_file"`
-    test _"$exist" = _ && continue
+  for dir in $DATA_DIRS; do
+    schema_dir="${dir}/glib-2.0/schemas"
+    test ! -d "$schema_dir" && continue
+    schema_file_base=`(
+      cd "${dir}/glib-2.0/schemas"
+      grep -l "id=\([\"']\)${schema}\1" *.gschema.xml 2>/dev/null| head -n 1
+    )`
+    test _"${schema_file_base}" = _ && continue
 
     IFS="$IFS_ORG"
-    echo "$wk_schema_file"
+    echo "${schema_dir}/${schema_file_base}"
     return 0
   done
   IFS="$IFS_ORG"
@@ -223,7 +209,7 @@ get_field() {
   FIELD=$1
   SCHEMA=$2
   KEY=$3
-  SCHEMA_XML=`schema_path "$SCHEMA"`
+  SCHEMA_XML=`schema_file "$SCHEMA"`
   if test _"$SCHEMA_XML" = _; then
     echo "No such schema '${SCHEMA}'" >&2
     exit 1
@@ -286,7 +272,7 @@ show_info() {
   fi
   SCHEMA=$1
   KEY=$2
-  SCHEMA_XML=`schema_path "$SCHEMA"`
+  SCHEMA_XML=`schema_file "$SCHEMA"`
   if test _"$SCHEMA_XML" = _; then
     echo "No such schema '${SCHEMA}'" >&2
     exit 1
