@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 usage() {
   SELF=`basename $0`
@@ -132,7 +132,7 @@ help() {
 
 schema_file() {
   schema=$1
-  DATA_DIRS="${XDG_DATA_DIRS:-/usr/share/}"
+  DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share/:/usr/share/}"
   IFS_ORG=$IFS
   IFS=:
   for dir in $DATA_DIRS; do
