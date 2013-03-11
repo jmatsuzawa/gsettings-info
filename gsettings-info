@@ -132,14 +132,17 @@ help() {
 
 schema_file() {
   schema=$1
-  DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share/:/usr/share/}"
+  schema_dirs="${GSETTINGS_SCHEMA_DIR}"
+  wk_data_dirs=`echo "${XDG_DATA_DIRS:-/usr/local/share/:/usr/share/}:" | sed 's@:@/glib-2.0/schemas:@g'`
+  schema_dirs="${schema_dirs}:${wk_data_dirs}"
+  schema_dirs=`echo "${schema_dirs}" |
+    sed -e 's@:\{1,\}@:@g' -e 's@^:@@' -e 's@:$@@' -e 's@/\{1,\}@/@g'`
   IFS_ORG=$IFS
   IFS=:
-  for dir in $DATA_DIRS; do
-    schema_dir="${dir}/glib-2.0/schemas"
+  for schema_dir in $schema_dirs; do
     test ! -d "$schema_dir" && continue
     schema_file_base=`(
-      cd "${dir}/glib-2.0/schemas"
+      cd "${schema_dir}"
       grep -l "id=\([\"']\)${schema}\1" *.gschema.xml 2>/dev/null| head -n 1
     )`
     test _"${schema_file_base}" = _ && continue
