@@ -4,22 +4,36 @@
 
 __gsettings_info() {
   local choices coffset schemadir
-  coffset=0
-  schemadir=
+
+  if [ ${COMP_CWORD} -gt 2 ]; then
+      if [ ${COMP_WORDS[1]} = --schemadir ]; then
+          # this complexity is needed to perform correct tilde expansion
+          schemadir=$(eval "echo --schemadir ${COMP_WORDS[2]}")
+          coffset=2
+      else
+          coffset=0
+      fi
+  else
+      coffset=0
+  fi
 
   case "$((${COMP_CWORD}-${coffset}))" in
     1)
-      choices=$'help \nsummary \ndesc \ndefault \nshow '
+      choices=$'--schemadir \nhelp \nsummary \ndesc \ndefault \nshow '
       ;;
 
     2)
       case "${COMP_WORDS[$(($coffset+1))]}" in
+        --schemadir)
+          COMPREPLY=($(compgen -o dirnames -- ${COMP_WORDS[${COMP_CWORD}]}))
+          return 0;
+          ;;
         help)
           choices=$'help\nsummary\ndesc\ndefault\nshow'
           ;;
 
         summary|desc|default|show)
-          choices="$(gsettings $schemadir list-schemas | sed -e 's.$. .')"
+          choices="$(gsettings $schemadir list-schemas 2>/dev/null| sed -e 's.$. .')"$'\n'"$(gsettings $schemadir list-relocatable-schemas 2>/dev/null| sed -e 's.$. .')"
           ;;
 
       esac
