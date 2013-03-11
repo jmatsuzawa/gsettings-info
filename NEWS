@@ -1,3 +1,14 @@
+0.2.0
+=====
+
+New Features and Fixes
+----------------------
+
+- Respect GSETTINGS_SCHEMA_DIR
+- Support --schemadir option
+- Improve bash completion
+
+
 0.1.1
 =====
 
