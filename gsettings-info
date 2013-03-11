@@ -1,5 +1,7 @@
 #!/bin/sh
 
+ADDITIONAL_DIR=
+
 usage() {
   SELF=`basename $0`
   cat <<EOF
@@ -132,7 +134,7 @@ help() {
 
 schema_file() {
   schema=$1
-  schema_dirs="${GSETTINGS_SCHEMA_DIR}"
+  schema_dirs="${ADDITIONAL_DIR}:${GSETTINGS_SCHEMA_DIR}"
   wk_data_dirs=`echo "${XDG_DATA_DIRS:-/usr/local/share/:/usr/share/}:" | sed 's@:@/glib-2.0/schemas:@g'`
   schema_dirs="${schema_dirs}:${wk_data_dirs}"
   schema_dirs=`echo "${schema_dirs}" |
@@ -297,6 +299,17 @@ if test "$#" -eq 0; then
   usage >&2
   exit 1
 fi
+
+case "$1" in
+  --schemadir)
+    ADDITIONAL_DIR=$2
+    shift 2
+    ;;
+  --schemadir=*)
+    ADDITIONAL_DIR=`echo "$1" | sed -n 's/--schemadir=\(.*\)/\1/p'`
+    shift 1
+    ;;
+esac
 
 CMD=$1
 shift 1
