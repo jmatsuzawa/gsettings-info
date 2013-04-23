@@ -4,7 +4,7 @@ gsettings-info
 Description
 -----------
 
-Gsettings-info is a command line tool. It allows you to get gschema information which the gsettings command does not give. You can get summary, description, default value, and|or type of keys.
+Gsettings-info is a command line tool. It allows you to get gschema information which the gsettings command does not give. You can get summary, description, default value, and/or type of keys. If the specified gschema is gettextized and its message catalog is installed, you will get translated schema info.
 
 
 Usage
@@ -29,67 +29,87 @@ Usage
 Example
 -------
 
-To get the descprition of the key 'dynamic-workspaces' in the schema 'org.gnome.shell.overrides'
+To get the descprition of the key 'autorotate' in the schema 'org.gnome.eog.view'
 
 ::
 
-  $ gsettings-info desc org.gnome.shell.overrides dynamic-workspaces
-  This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  $ gsettings-info desc org.gnome.eog.view autorotate
+  Whether the image should be rotated automatically based on EXIF orientation.
 
 
 If no key is given, you get the description of all the keys in the schema.
 
 ::
 
-  $ gsettings-info desc org.gnome.shell.overrides                   
-  attach-modal-dialogs: This key overrides the key in org.gnome.mutter when running GNOME Shell.
-  button-layout: This key overrides the key in org.gnome.desktop.wm.preferences when running GNOME Shell.
-  edge-tiling: This key overrides the key in org.gnome.mutter when running GNOME Shell.
-  dynamic-workspaces: This key overrides the key in org.gnome.mutter when running GNOME Shell.
-  workspaces-only-on-primary: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  $ gsettings-info desc org.gnome.eog.view
+  autorotate: Whether the image should be rotated automatically based on EXIF orientation.
+  background-color: The color that is used to fill the area behind the image. If the use-background-color key is not set, the color is determined by the active GTK+ theme instead.
+  interpolate: Whether the image should be interpolated on zoom-out. This leads to better quality but is somewhat slower than non-interpolated images.
+  extrapolate: Whether the image should be extrapolated on zoom-in. This leads to blurry quality and is somewhat slower than non-extrapolated images.
+  transparency: Determines how transparency should be indicated. Valid values are CHECK_PATTERN, COLOR and NONE. If COLOR is chosen, then the trans-color key determines the color value used.
+  scroll-wheel-zoom: Whether the scroll wheel should be used for zooming.
+  zoom-multiplier: The multiplier to be applied when using the mouse scroll wheel for zooming. This value defines the zooming step used for each scroll event. For example, 0.05 results in a 5% zoom increment for each scroll event and 1.00 result in a 100% zoom increment.
+  trans-color: If the transparency key has the value COLOR, then this key determines the color which is used for indicating transparency.
+  use-background-color: If this is active, the color set by the background-color key will be used to fill the area behind the image. If it is not set, the current GTK+ theme will determine the fill color.
 
 
 You can get a summary or a default value as well as description like that. Gsettings-info shows all the information of keys as below.
 
 ::
 
-  $ gsettings-info show org.gnome.shell.overrides dynamic-workspaces
-  KEY: dynamic-workspaces
+  $ gsettings-info show org.gnome.eog.view
+  KEY: autorotate
   TYPE: b
-  SUMMARY: Workspaces are managed dynamically
-  DESCRIPTION: This key overrides the key in org.gnome.mutter when running GNOME Shell.
-  DEFAULT: true
-
-
-  $ gsettings-info show org.gnome.shell.overrides
-  KEY: attach-modal-dialogs
-  TYPE: b
-  SUMMARY: Attach modal dialog to the parent window
-  DESCRIPTION: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  SUMMARY: Automatic orientation
+  DESCRIPTION: Whether the image should be rotated automatically based on EXIF orientation.
   DEFAULT: true
   
-  KEY: button-layout
+  KEY: background-color
   TYPE: s
-  SUMMARY: Arrangement of buttons on the titlebar
-  DESCRIPTION: This key overrides the key in org.gnome.desktop.wm.preferences when running GNOME Shell.
-  DEFAULT: ":close"
+  SUMMARY: Background Color
+  DESCRIPTION: The color that is used to fill the area behind the image. If the use-background-color key is not set, the color is determined by the active GTK+ theme instead.
+  DEFAULT: '#000000'
   
-  KEY: edge-tiling
+  KEY: interpolate
   TYPE: b
-  SUMMARY: Enable edge tiling when dropping windows on screen edges
-  DESCRIPTION: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  SUMMARY: Interpolate Image
+  DESCRIPTION: Whether the image should be interpolated on zoom-out. This leads to better quality but is somewhat slower than non-interpolated images.
   DEFAULT: true
   
-  KEY: dynamic-workspaces
+  KEY: extrapolate
   TYPE: b
-  SUMMARY: Workspaces are managed dynamically
-  DESCRIPTION: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  SUMMARY: Extrapolate Image
+  DESCRIPTION: Whether the image should be extrapolated on zoom-in. This leads to blurry quality and is somewhat slower than non-extrapolated images.
   DEFAULT: true
   
-  KEY: workspaces-only-on-primary
+  KEY: transparency
+  TYPE: 
+  SUMMARY: Transparency indicator
+  DESCRIPTION: Determines how transparency should be indicated. Valid values are CHECK_PATTERN, COLOR and NONE. If COLOR is chosen, then the trans-color key determines the color value used.
+  DEFAULT: 'checked'
+  
+  KEY: scroll-wheel-zoom
   TYPE: b
-  SUMMARY: Workspaces only on primary monitor
-  DESCRIPTION: This key overrides the key in org.gnome.mutter when running GNOME Shell.
+  SUMMARY: Scroll wheel zoom
+  DESCRIPTION: Whether the scroll wheel should be used for zooming.
+  DEFAULT: true
+  
+  KEY: zoom-multiplier
+  TYPE: d
+  SUMMARY: Zoom multiplier
+  DESCRIPTION: The multiplier to be applied when using the mouse scroll wheel for zooming. This value defines the zooming step used for each scroll event. For example, 0.05 results in a 5% zoom increment for each scroll event and 1.00 result in a 100% zoom increment.
+  DEFAULT: 0.05
+  
+  KEY: trans-color
+  TYPE: s
+  SUMMARY: Transparency color
+  DESCRIPTION: If the transparency key has the value COLOR, then this key determines the color which is used for indicating transparency.
+  DEFAULT: '#000000'
+  
+  KEY: use-background-color
+  TYPE: b
+  SUMMARY: Use a custom background color
+  DESCRIPTION: If this is active, the color set by the background-color key will be used to fill the area behind the image. If it is not set, the current GTK+ theme will determine the fill color.
   DEFAULT: true
 
 
@@ -105,7 +125,8 @@ details, see the bash manual ($ man bash).
 REQUIREMENT
 -----------
 
-- xsltproc (http://xmlsoft.org/xslt/)
+- xsltproc(1) (http://xmlsoft.org/xslt/)
+- gettext(1) (http://www.gnu.org/software/gettext/)
 
 
 Authors
