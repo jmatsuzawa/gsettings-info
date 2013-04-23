@@ -157,6 +157,85 @@ schema_file() {
   return 1
 }
 
+schema_gettext_domain() {
+  schema=$1
+  schema_xml=$2
+
+  domain=`echo '
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+  <xsl:output method="text"/>
+  <xsl:strip-space elements="*"/>
+
+  <xsl:template match="/schemalist/schema[@id='"'$schema'"']">
+    <xsl:value-of select="@gettext-domain"/>
+  </xsl:template>
+  <xsl:template match="text()"/>
+</xsl:stylesheet>' |
+  xsltproc - "$schema_xml"`
+  if test ! _"$domain" = _; then
+    echo "$domain"
+    return 0
+  fi
+  domain=`echo '
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+  <xsl:output method="text"/>
+  <xsl:strip-space elements="*"/>
+
+  <xsl:template match="/schemalist">
+    <xsl:value-of select="@gettext-domain"/>
+  </xsl:template>
+  <xsl:template match="text()"/>
+</xsl:stylesheet>' |
+  xsltproc - "$schema_xml"`
+  if test ! _"$domain" = _; then
+    echo "$domain"
+    return 0
+  fi
+  return 1
+}
+
+# Define the command to translate schema info
+# If you do not have gettext(1), it do nothing.
+if which gettext >/dev/null 2>&1; then
+  TR_SCHEMA() {
+    domain="$1"
+    domain_dir="$2"
+    if test -d "$domain_dir"; then
+      TEXTDOMAINDIR="$domain_dir"
+      export TEXTDOMAINDIR
+    fi
+
+    awk '{
+      if ($0 ~ /^SUMMARY: /) {
+        sub(/^SUMMARY: /, "")
+        gsub(/"/, "\\\"")
+        printf ("SUMMARY: ")
+        system("gettext -d " domain " \"" $0 "\"")
+        print ""
+      } else if ($0 ~ /^DESCRIPTION: /) {
+        sub(/^DESCRIPTION: /, "")
+        gsub(/"/, "\\\"")
+        printf ("DESCRIPTION: ")
+        system("gettext -d " domain " \"" $0 "\"")
+        print ""
+      } else if ($0 ~ /^DEFAULT: /) {
+        sub(/^DEFAULT: /, "")
+        gsub(/"/, "\\\"")
+        printf ("DEFAULT: ")
+        system("gettext -d " domain " \"" $0 "\"")
+        print ""
+      } else {
+        print
+      }
+    }' "domain=${domain}"
+  }
+else
+  TR_SCHEMA() {
+    cat
+  }
+fi
+
+
 key_exist() {
   schema=$1
   key=$2
@@ -179,13 +258,17 @@ key_exist() {
 get_info() {
   schema=$1
   schema_xml=$2
+  schema_domain=`schema_gettext_domain "$1" "$2"`
 
-  xsltproc - "$schema_xml" <<XSLT
+  # This might work in only standard dirs
+  domain_dir=`echo "$schema_xml" | sed 's@\(.*\)/glib-2.0/schemas.*@\1/locale@'`
+
+  echo '
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:output method="text"/>
   <xsl:strip-space elements="*"/>
 
-  <xsl:template match="/schemalist/schema[@id='$schema']">
+  <xsl:template match="/schemalist/schema[@id=' "'$schema'" ']">
     <xsl:for-each select="key">
       <xsl:text>KEY: </xsl:text>
       <xsl:value-of select="@name"/>
@@ -207,7 +290,7 @@ get_info() {
   </xsl:template>
   <xsl:template match="text()"/>
 </xsl:stylesheet>
-XSLT
+' | xsltproc - "$schema_xml" | TR_SCHEMA "$schema_domain" "$domain_dir"
 }
 
 get_field() {
