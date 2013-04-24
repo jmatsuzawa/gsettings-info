@@ -207,22 +207,28 @@ if which gettext >/dev/null 2>&1; then
 
     awk '{
       if ($0 ~ /^SUMMARY: /) {
+        printf("SUMMARY: ")
         sub(/^SUMMARY: /, "")
-        gsub(/"/, "\\\"")
-        printf ("SUMMARY: ")
-        system("gettext -d " domain " \"" $0 "\"")
+        if ($0 != "") {
+          gsub(/"/, "\\\"")
+          system("gettext -d " domain " \"" $0 "\"")
+        }
         print ""
       } else if ($0 ~ /^DESCRIPTION: /) {
+        printf("DESCRIPTION: ")
         sub(/^DESCRIPTION: /, "")
-        gsub(/"/, "\\\"")
-        printf ("DESCRIPTION: ")
-        system("gettext -d " domain " \"" $0 "\"")
+        if ($0 != "") {
+          gsub(/"/, "\\\"")
+          system("gettext -d " domain " \"" $0 "\"")
+        }
         print ""
       } else if ($0 ~ /^DEFAULT: /) {
+        printf("DEFAULT: ")
         sub(/^DEFAULT: /, "")
-        gsub(/"/, "\\\"")
-        printf ("DEFAULT: ")
-        system("gettext -d " domain " \"" $0 "\"")
+        if ($0 != "") {
+          gsub(/"/, "\\\"")
+          system("gettext -d " domain " \"" $0 "\"")
+        }
         print ""
       } else {
         print
