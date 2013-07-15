@@ -215,7 +215,7 @@ if which gettext >/dev/null 2>&1; then
         sub(/^SUMMARY: /, "")
         if ($0 != "") {
           gsub(/"/, "\\\"")
-          system("gettext -d " domain " \"" $0 "\"")
+          system("gettext -d " domain " -- \"" $0 "\"")
         }
         print ""
       } else if ($0 ~ /^DESCRIPTION: /) {
@@ -223,7 +223,7 @@ if which gettext >/dev/null 2>&1; then
         sub(/^DESCRIPTION: /, "")
         if ($0 != "") {
           gsub(/"/, "\\\"")
-          system("gettext -d " domain " \"" $0 "\"")
+          system("gettext -d " domain " -- \"" $0 "\"")
         }
         print ""
       } else if ($0 ~ /^DEFAULT: /) {
@@ -231,7 +231,7 @@ if which gettext >/dev/null 2>&1; then
         sub(/^DEFAULT: /, "")
         if ($0 != "") {
           gsub(/"/, "\\\"")
-          system("gettext -d " domain " \"" $0 "\"")
+          system("gettext -d " domain " -- \"" $0 "\"")
         }
         print ""
       } else {
