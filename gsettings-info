@@ -199,6 +199,10 @@ schema_gettext_domain() {
 if which gettext >/dev/null 2>&1; then
   TR_SCHEMA() {
     domain="$1"
+    if test _"$domain" = _; then
+      cat
+      return
+    fi
     domain_dir="$2"
     if test -d "$domain_dir"; then
       TEXTDOMAINDIR="$domain_dir"
