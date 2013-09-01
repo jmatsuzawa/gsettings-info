@@ -115,11 +115,22 @@ You can get a summary or a default value as well as description like that. Gsett
 
 COMMAND COMPLETION
 ------------------
+The program supports completion for bash and zsh.
 
-The program supports bash completion. To take advantage of the completion
-feature, load completion/bash/gsettings-info in your ~/.bash_completion.
+bash
+~~~~
+To take advantage of bash completion feature, load
+completion/bash/gsettings-info in your ~/.bash_completion.
 You can load it using the source command or dot (.) command. For more
 details, see the bash manual ($ man bash).
+
+zsh
+~~~
+To take advantage of zsh completion feature, copy
+completion/zsh/_gsettings-info into ${prefix}/zsh/site-functions/ ($prefix is
+/usr/local in most cases) or your private directory.
+If you copy it into your private directory, make sure that the direcotry is
+included in $fpath.
 
 
 REQUIREMENT
