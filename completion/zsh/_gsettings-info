@@ -23,17 +23,15 @@ _gsettings_info() {
   local CMD_IDX=2
   local SCHEMA_IDX=3
   local KEY_IDX=4
-  local VALUE_IDX=5
   local offset=0
-  local opt_schemadir schemadir cmd schema key
+  local opt_schemadir schemadir schema
 
   if [[ $#words -ge 4 && "${(Q)words[2]}" == --schemadir ]]; then
     opt_schemadir=--schemadir
     schemadir="${(Q)words[3]}"
     offset=2
   fi
-  cmd="${(Q)words[CMD_IDX+offset]}"
-  case "$cmd" in
+  case "${(Q)words[CMD_IDX+offset]}" in
     help)
       _gsettings_info_help_targets
       ;;
